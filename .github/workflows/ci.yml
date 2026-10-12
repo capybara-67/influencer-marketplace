@@ -14,4 +14,5 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run typecheck
+      - run: npm run doctor
       - run: npm run build:web

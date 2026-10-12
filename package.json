@@ -9,34 +9,52 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "test": "node tests/rls.test.mjs",
-    "build:web": "expo export --platform web --output-dir dist"
+    "test": "node tests/rls.test.mjs && node --experimental-strip-types --test tests/auth-session.test.ts",
+    "build:web": "expo export --platform web --output-dir dist",
+    "doctor": "expo-doctor"
   },
   "dependencies": {
-    "@react-navigation/native": "^6.1.18",
-    "@react-navigation/native-stack": "^6.11.0",
     "@supabase/supabase-js": "2.105.3",
-    "expo": "~52.0.30",
-    "expo-asset": "~11.0.5",
-    "expo-constants": "~17.0.5",
-    "expo-linking": "~7.0.5",
-    "expo-router": "~4.0.17",
-    "expo-secure-store": "~14.0.1",
-    "expo-status-bar": "~2.0.1",
-    "react": "18.3.1",
-    "react-native": "0.76.6",
-    "react-native-safe-area-context": "4.12.0",
-    "react-native-screens": "~4.4.0",
-    "react-native-web": "~0.19.13"
+    "expo": "~57.0.27",
+    "expo-asset": "~57.0.19",
+    "expo-constants": "~57.0.21",
+    "expo-linking": "~57.0.12",
+    "expo-router": "~57.0.25",
+    "expo-secure-store": "~57.0.4",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-native": "0.86.3",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "~0.21.0",
+    "react-native-worklets": "0.10.1",
+    "react-server-dom-webpack": "19.2.8"
   },
   "devDependencies": {
-    "@types/react": "~18.3.12",
-    "typescript": "~5.3.3",
-    "@electric-sql/pglite": "0.5.8"
+    "@electric-sql/pglite": "0.5.8",
+    "@types/node": "~22.20.5",
+    "@types/react": "~19.2.0",
+    "babel-preset-expo": "~57.0.14",
+    "expo-doctor": "1.20.4",
+    "typescript": "~6.0.3"
   },
   "overrides": {
     "@expo/plist": {
       "@xmldom/xmldom": "^0.9.10"
+    }
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "react",
+        "react-dom"
+      ]
     }
   }
 }

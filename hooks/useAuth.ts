@@ -1,70 +1,37 @@
-import { PropsWithChildren, createContext, createElement, useContext, useEffect, useMemo, useState } from "react";
-import { Session } from "@supabase/supabase-js";
-import { supabase } from "../lib/supabase";
-
-type AuthState = {
-  session: Session | null;
-  loading: boolean;
-  error: string | null;
-};
+import { PropsWithChildren, createContext, createElement, useContext, useEffect, useState } from 'react';
+import { AppState, Platform } from 'react-native';
+import { supabase } from '../lib/supabase';
+import { observeSession, type AuthState } from '../lib/auth-session';
 
 const AuthContext = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  const [state, setState] = useState<AuthState>({ session: null, loading: true, error: null });
   useEffect(() => {
     if (!supabase) {
-      setSession(null);
-      setLoading(false);
+      setState({ session: null, loading: false, error: null });
       return;
     }
-
-    let mounted = true;
-
-    supabase.auth.getSession().then(({ data, error: sessionError }) => {
-      if (!mounted) {
-        return;
-      }
-
-      if (sessionError) setError(sessionError.message);
-      setSession(data.session);
-      setLoading(false);
-    }).catch((failure: unknown) => {
-      if (!mounted) return;
-      setError(failure instanceof Error ? failure.message : "Unable to restore your session.");
-      setSession(null);
-      setLoading(false);
-    });
-
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (!mounted) return;
-      setError(null);
-      setSession(nextSession);
-      setLoading(false);
-    });
-
+    const auth = supabase.auth;
+    const unsubscribe = observeSession(auth, setState);
+    if (Platform.OS === 'web') return unsubscribe;
+    const refresh = (active: boolean) => {
+      if (active) auth.startAutoRefresh();
+      else auth.stopAutoRefresh();
+    };
+    refresh(AppState.currentState === 'active');
+    const listener = AppState.addEventListener('change', status => refresh(status === 'active'));
     return () => {
-      mounted = false;
-      subscription.unsubscribe();
+      unsubscribe();
+      listener.remove();
+      auth.stopAutoRefresh();
     };
   }, []);
-
-  const value = useMemo(() => ({ session, loading, error }), [session, loading, error]);
-
-  return createElement(AuthContext.Provider, { value }, children);
+  return createElement(AuthContext.Provider, { value: state }, children);
 }
 
 export function useAuth() {
   const auth = useContext(AuthContext);
-
-  if (!auth) {
-    throw new Error("useAuth must be used inside AuthProvider");
-  }
-
+  if (!auth) throw new Error('useAuth must be used inside AuthProvider');
   return auth;
 }
